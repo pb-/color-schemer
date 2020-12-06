@@ -157,7 +157,7 @@
     [:span "A color-scheme editor for "
      [:a {:href "https://refactoringui.com/previews/building-your-color-palette/"} "this approach"] \.]
     [:button {:onClick (fn [e] (on-change (fn [s] (update s :code? not))))}
-     (if code? "Back to editor" "Export CSS / link")]]
+     (if code? "Back to editor" "Export CSS")]]
    (if code?
      [css-code state]
      [editor state on-change])

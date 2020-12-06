@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color schemer</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      button {
+        border: 0;
+        border-radius: 0.25rem;
+        background: #ddd;
+        color: #444;
+        font-family: system-ui, sans-serif;
+        font-size: 1rem;
+        line-height: 1.2;
+        white-space: nowrap;
+        text-decoration: none;
+        padding: 0.333rem 0.666rem;
+        margin: 0.333rem;
+        cursor: pointer;
+      }
+      button:hover
+      {
+          background: #ccc;
+      }
+      a {
+        color: inherit;
+      }
+      .main {
+        display: inline-block;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .swatch-navigation {
+        margin-top: .666rem;
+        display: grid;
+        grid-template-rows: 2em 0.333rem;
+        column-gap: .333rem;
+        border-bottom: 2px solid;
+      }
+      .add-hue {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: x-large;
+      }
+      .add-hue:hover {
+        background-color: #eee;
+        cursor: pointer;
+      }
+      .hue-headline {
+        margin-bottom: 0;
+      }
+      .hue-slider {
+        width: 100%;
+      }
+      .hue-swatch:hover {
+        border-top: 2px solid white;
+        cursor: pointer;
+      }
+      .hue-swatch-glue {
+        grid-row: 2;
+      }
+      .shade-grid {
+        margin: 1rem 0 .666rem 0;
+        display: grid;
+        grid-template-columns: 5.5rem 1fr 3rem 1fr 3rem 2rem;
+        row-gap: .333rem;
+        align-items: center;
+        justify-items: center;
+      }
+      .shade-swatch {
+        width: 2rem;
+        height: 2rem;
+      }
+      .shade-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        justify-content: space-between;
+      }
+      .more-shades {
+        grid-column: 2;
+      }
+      .fewer-shades {
+        grid-columns: 1;
+      }
+      .code {
+        font-size: larger;
+        background-color: #f0f0f0;
+        padding: 1rem;
+      }
+      .source {
+        font-size: smaller;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+    </div>
+    <script src="main.js" type="text/javascript"></script>
+  </body>
+</html>

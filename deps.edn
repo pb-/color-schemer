@@ -1,6 +1,6 @@
 {:deps {org.clojure/clojure       {:mvn/version "1.10.1"}
         org.clojure/clojurescript {:mvn/version "1.10.773"}
-        cjohansen/dumdom          {:mvn/version "2020.10.19"}}
+        cjohansen/dumdom          {:mvn/version "2020.07.04"}}
  :paths ["src" "resources"]
  :aliases {:fig {:extra-deps
                  {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}

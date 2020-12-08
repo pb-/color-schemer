@@ -123,11 +123,14 @@
        "}\n"))
 
 (defcomponent css-code [state]
-  [:pre {:class "code"} (state->css state)])
+  [:pre {:class "code"
+         :mounted-style {:opacity "1"}}
+   (state->css state)])
 
 (defcomponent editor [{:keys [selected hues]} on-change]
   (let [hue (hues selected)]
-    [:div
+    [:div {:class "editor"
+           :mounted-style {:opacity "1"}}
      [:div {:class "swatch-navigation"
             :style {:grid-template-columns (str "repeat(" (inc (count hues)) ", 2rem)")
                     :border-bottom-color (hsv->css (representative hue))}}
@@ -161,7 +164,7 @@
    (if code?
      [css-code state]
      [editor state on-change])
-   [:p {:class "source"} "Version 1. Show me "
+   [:p {:class "source"} "Version 2. Show me "
     [:a {:href "https://github.com/pb-/color-schemer/blob/master/src/colorschemer/core.cljs"} "the source"] \.]])
 
 (defn render! []

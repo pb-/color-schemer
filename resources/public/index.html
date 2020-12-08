@@ -62,6 +62,18 @@
       .hue-headline {
         margin-bottom: 0;
       }
+      .name-control {
+        visibility: hidden;
+        margin-left: 0.666rem;
+        opacity: 0.333;
+      }
+      .name-control:hover {
+        opacity: 1;
+        cursor: pointer;
+      }
+      .hue-headline:hover .name-control {
+        visibility: visible;
+      }
       .hue-slider {
         width: 100%;
       }

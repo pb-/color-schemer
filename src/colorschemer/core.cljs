@@ -28,6 +28,11 @@
       (update :hues conj (make-hue))
       (assoc :selected (count (:hues state)))))
 
+(defn remove-hue [{:keys [selected hues] :as state}]
+  (-> state
+      (assoc :hues (vec (concat (subvec hues 0 selected) (subvec hues (inc selected) (count hues)))))
+      (assoc :selected (max 0 (dec selected)))))
+
 (defn select-hue [state selected]
   (assoc state :selected selected))
 
@@ -63,6 +68,21 @@
     5 (range 1 10 2)
     9 (range 1 10 1)))
 
+(defn hue-info->css [{:keys [identifier hue shades]}]
+  (apply str
+         (for [[shade-num [s v]] (map vector (shade-nums (count shades)) shades)]
+           (str "  --color-" identifier "-s" shade-num ": " (hsv->css [hue s v]) ";\n"))))
+
+(defn state->css [{:keys [hues]}]
+  (str ":root {\n"
+       "  /* use these colors with var(--color-h1-s1) etc. */\n"
+       (apply
+         str
+         (interpose
+           \newline
+           (map-indexed #(hue-info->css (assoc %2 :identifier (str \h (inc %1)))) hues)))
+       "}\n"))
+
 (defcomponent slider
   [value low high step class- on-change]
   [:input {:type :range
@@ -76,10 +96,8 @@
 (defcomponent percentage [p]
   [:span (str (js/Math.round (* 100 p)) \%)])
 
-(defcomponent hue-details [{:keys [hue shades] :as hue-info} on-change]
+(defcomponent hue-detail-controls [{:keys [hue shades] :as hue-info} on-change]
   [:div
-   [:h1 {:class "hue-headline"
-         :style {:color (hsv->css (representative hue-info))}} (str "Hue " hue)]
    [slider hue 0 360 1 "hue-slider" (fn [h] (on-change (fn [hue-info] (assoc hue-info :hue h))))]
    [:div {:class "shade-grid"
           :style {:grid-template-rows (str "repeat(" (count shades) ", 2rem)")}}
@@ -97,37 +115,37 @@
          [:div {:class "shade-swatch"
                 :style {:background-color (hsv->css [hue saturation value])}}]]))]])
 
-(defcomponent hue-swatch [color on-click extra-style]
+(defcomponent hue-details [{:keys [selected hues] :as state} on-change]
+  (let [hue-info (hues selected)]
+    [:div
+     [:h1 {:class "hue-headline"
+           :style {:color (hsv->css (representative hue-info))}}
+      (str "Hue " (:hue hue-info))
+      [:span {:class "name-control" :title "Change name"} "✎"]
+      (when (> (count hues) 1)
+        [:span {:class "name-control"
+                :title "Remove hue"
+                :onClick #(on-change remove-hue)} "✕"])]
+     [hue-detail-controls
+      hue-info
+      (fn [hue-info] (on-change (fn [s] (update-in s [:hues (:selected s)] hue-info))))]]))
+
+(defcomponent hue-swatch [color on-click]
   [:div {:class "hue-swatch"
-         :style (merge {:background-color (hsv->css color)} extra-style)
+         :style {:background-color (hsv->css color)}
          :onClick on-click}])
 
-(defcomponent hue-swatch-glue [color selected]
+(defcomponent hue-swatch-glue [{:keys [color position]}]
   [:div {:class "hue-swatch-glue"
-         :style {:grid-column (inc selected)
+         :style {:grid-column position
                  :background-color (hsv->css color)}}])
-
-(defn hue-info->css [{:keys [identifier hue shades]}]
-  (apply str
-         (for [[shade-num [s v]] (map vector (shade-nums (count shades)) shades)]
-           (str "  --color-" identifier "-s" shade-num ": " (hsv->css [hue s v]) ";\n"))))
-
-(defn state->css [{:keys [hues]}]
-  (str ":root {\n"
-       "  /* use these colors with var(--color-h1-s1) etc. */\n"
-       (apply
-         str
-         (interpose
-           \newline
-           (map-indexed #(hue-info->css (assoc %2 :identifier (str \h (inc %1)))) hues)))
-       "}\n"))
 
 (defcomponent css-code [state]
   [:pre {:class "code"
          :mounted-style {:opacity "1"}}
    (state->css state)])
 
-(defcomponent editor [{:keys [selected hues]} on-change]
+(defcomponent editor [{:keys [selected hues] :as state} on-change]
   (let [hue (hues selected)]
     [:div {:class "editor"
            :mounted-style {:opacity "1"}}
@@ -135,13 +153,11 @@
             :style {:grid-template-columns (str "repeat(" (inc (count hues)) ", 2rem)")
                     :border-bottom-color (hsv->css (representative hue))}}
       (for [[i hue] (map-indexed vector hues)]
-        [hue-swatch (representative hue) (fn [e] (on-change (fn [s] (select-hue s i)))) {}])
+        [hue-swatch (representative hue) (fn [e] (on-change (fn [s] (select-hue s i))))])
       [:div {:class "add-hue"
              :onClick (fn [e] (on-change (fn [s] (add-hue s))))} [:span \+]]
-      [hue-swatch-glue (representative hue) selected]]
-     [hue-details
-      hue
-      (fn [hue-info] (on-change (fn [s] (update-in s [:hues (:selected s)] hue-info))))]
+      [hue-swatch-glue {:color (representative hue) :position (inc selected)}]]
+     [hue-details state on-change]
      [:div {:class "shade-controls"}
       (when (> (count (:shades hue)) 3)
         [:button

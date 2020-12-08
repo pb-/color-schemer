@@ -210,7 +210,7 @@
      [css-code state]
      [editor state on-change])
    [:p {:class "source"} "Version 2. Show me "
-    [:a {:href "https://github.com/pb-/color-schemer/blob/master/src/colorschemer/core.cljs"} "the source"] \.]])
+    [:a {:href "https://github.com/pb-/color-schemer/blob/main/src/colorschemer/core.cljs"} "the source"] \.]])
 
 (defn render! []
   (let [state @global-state]

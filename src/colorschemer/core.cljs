@@ -9,6 +9,7 @@
 
 (defonce global-state
   (atom {:code? false
+         :editing-name? false
          :selected 0
          :hues [(make-hue)]}))
 
@@ -83,6 +84,24 @@
            (map-indexed #(hue-info->css (assoc %2 :identifier (str \h (inc %1)))) hues)))
        "}\n"))
 
+(defn hue-name [hue-info]
+  (or (:name hue-info) (str "Hue " (:hue hue-info))))
+
+(defn name-hue [new-name hue-info]
+  (let [n (.trim new-name)]
+    (cond
+    (empty? n) (dissoc hue-info :name)
+    (= n (hue-name hue-info)) hue-info
+    :else (assoc hue-info :name n))))
+
+(defn finish-editing [state new-name]
+  (-> state
+      (update-in [:hues (:selected state)] (partial name-hue new-name))
+      (assoc :editing-name? false)))
+
+(defn focus-element! [e]
+  (when e (.focus e)))
+
 (defcomponent slider
   [value low high step class- on-change]
   [:input {:type :range
@@ -115,17 +134,27 @@
          [:div {:class "shade-swatch"
                 :style {:background-color (hsv->css [hue saturation value])}}]]))]])
 
-(defcomponent hue-details [{:keys [selected hues] :as state} on-change]
+(defcomponent hue-details [{:keys [selected hues editing-name?] :as state} on-change]
   (let [hue-info (hues selected)]
     [:div
-     [:h1 {:class "hue-headline"
-           :style {:color (hsv->css (representative hue-info))}}
-      (str "Hue " (:hue hue-info))
-      [:span {:class "name-control" :title "Change name"} "✎"]
-      (when (> (count hues) 1)
+     (if editing-name?
+       [:input {:value (:name hue-info)
+                :class "name-input"
+                :ref focus-element!
+                :placeholder "Hue name"
+                :onKeyUp #(when (= (.-key %) "Enter")
+                            (on-change (fn [s] (finish-editing s (.-target.value %)))))
+                :onBlur #(on-change (fn [s] (assoc s :editing-name? false)))}]
+       [:h1 {:class "hue-headline"
+             :style {:color (hsv->css (representative hue-info))}}
+        (hue-name hue-info)
         [:span {:class "name-control"
-                :title "Remove hue"
-                :onClick #(on-change remove-hue)} "✕"])]
+                :title "Change name"
+                :onClick #(on-change (fn [s] (assoc s :editing-name? true)))} "✎"]
+        (when (> (count hues) 1)
+          [:span {:class "name-control"
+                  :title "Remove hue"
+                  :onClick #(on-change remove-hue)} "✕"])])
      [hue-detail-controls
       hue-info
       (fn [hue-info] (on-change (fn [s] (update-in s [:hues (:selected s)] hue-info))))]]))

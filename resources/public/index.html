@@ -13,7 +13,7 @@
         border-radius: 0.25rem;
         background: #ddd;
         color: #444;
-        font-family: system-ui, sans-serif;
+        font-family: sans-serif;
         font-size: 1rem;
         line-height: 1.2;
         white-space: nowrap;
@@ -60,6 +60,7 @@
         cursor: pointer;
       }
       .hue-headline {
+        margin-top: 1rem;
         margin-bottom: 0;
       }
       .name-control {
@@ -70,6 +71,23 @@
       .name-control:hover {
         opacity: 1;
         cursor: pointer;
+      }
+      .name-input::placeholder {
+        color: #ccc;
+        opacity: 1;
+      }
+      .name-input {
+        width: 100%;
+        margin-top: 1rem;
+        border: 0;
+        background: #eee;
+        color: #444;
+        font-family: sans-serif;
+        font-size: 2em;
+        font-weight: bold;
+        white-space: nowrap;
+        text-decoration: none;
+        padding: 0;
       }
       .hue-headline:hover .name-control {
         visibility: visible;

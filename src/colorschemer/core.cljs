@@ -11,7 +11,20 @@
   (atom {:code? false
          :editing-name? false
          :selected 0
-         :hues [(make-hue)]}))
+         :hues [(make-hue)]
+         :url (str js/window.location.origin js/window.location.pathname)}))
+
+(defn format-fragment [data]
+  (-> data
+      clj->js
+      js/JSON.stringify
+      js/encodeURI))
+
+(defn parse-fragment [data]
+  (-> data
+      js/decodeURI
+      js/JSON.parse
+      (js->clj :keywordize-keys true)))
 
 (defn hsv->hsl [[hue saturation value]]
   (let [h hue
@@ -81,8 +94,9 @@
       (apply str (interpose \- (map #(.toLowerCase %) (re-seq #"\w+" name-))))
       (str \h (inc index)))))
 
-(defn state->css [{:keys [hues]}]
+(defn state->css [{:keys [hues url]}]
   (str ":root {\n"
+       "  /* view/edit at " url "#" (format-fragment hues) " */\n"
        "  /* use these colors with var(--color-h1-s1) etc. */\n"
        (apply
          str
@@ -209,14 +223,14 @@
 (defcomponent main [{:keys [code?] :as state} on-change]
   [:div {:class "main"}
    [:div {:class "header"}
-    [:span "A color-scheme editor for "
+    [:span "An editor for "
      [:a {:href "https://refactoringui.com/previews/building-your-color-palette/"} "this approach"] \.]
     [:button {:onClick (fn [e] (on-change (fn [s] (update s :code? not))))}
-     (if code? "Back to editor" "Export CSS")]]
+     (if code? "Back to editor" "Link / Export CSS")]]
    (if code?
      [css-code state]
      [editor state on-change])
-   [:p {:class "source"} "Version 2. Show me "
+   [:p {:class "source"} "Version 3. Show me "
     [:a {:href "https://github.com/pb-/color-schemer/blob/main/src/colorschemer/core.cljs"} "the source"] \.]])
 
 (defn render! []
@@ -225,4 +239,12 @@
       [main state (fn [f] (swap! global-state f) (render!))]
       (js/document.getElementById "app"))))
 
-(render!)
+(defn init! []
+  (when (not-empty js/window.location.hash)
+    (try
+      (swap! global-state assoc :hues (parse-fragment (subs js/window.location.hash 1)))
+      (catch js/Error _))
+    (js/history.replaceState nil nil " ")) ; clear URL fragment
+  (render!))
+
+(init!)

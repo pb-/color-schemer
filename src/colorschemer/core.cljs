@@ -148,13 +148,13 @@
        [:h1 {:class "hue-headline"
              :style {:color (hsv->css (representative hue-info))}}
         (hue-name hue-info)
-        [:span {:class "name-control"
-                :title "Change name"
-                :onClick #(on-change (fn [s] (assoc s :editing-name? true)))} "✎"]
         (when (> (count hues) 1)
           [:span {:class "name-control"
                   :title "Remove hue"
-                  :onClick #(on-change remove-hue)} "✕"])])
+                  :onClick #(on-change remove-hue)} "✕"])
+        [:span {:class "name-control"
+                :title "Change name"
+                :onClick #(on-change (fn [s] (assoc s :editing-name? true)))} "✎"]])
      [hue-detail-controls
       hue-info
       (fn [hue-info] (on-change (fn [s] (update-in s [:hues (:selected s)] hue-info))))]]))

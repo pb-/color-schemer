@@ -74,6 +74,13 @@
          (for [[shade-num [s v]] (map vector (shade-nums (count shades)) shades)]
            (str "  --color-" identifier "-s" shade-num ": " (hsv->css [hue s v]) ";\n"))))
 
+(defn with-identifier [index hue-info]
+  (assoc
+    hue-info :identifier
+    (if-let [name- (:name hue-info)]
+      (apply str (interpose \- (map #(.toLowerCase %) (re-seq #"\w+" name-))))
+      (str \h (inc index)))))
+
 (defn state->css [{:keys [hues]}]
   (str ":root {\n"
        "  /* use these colors with var(--color-h1-s1) etc. */\n"
@@ -81,7 +88,7 @@
          str
          (interpose
            \newline
-           (map-indexed #(hue-info->css (assoc %2 :identifier (str \h (inc %1)))) hues)))
+           (map-indexed (comp hue-info->css with-identifier) hues)))
        "}\n"))
 
 (defn hue-name [hue-info]

@@ -238,7 +238,7 @@
    (if code?
      [css-code state]
      [editor state on-change])
-   [:p {:class "source"} "Version 3. Show me "
+   [:p {:class "source"} "Version 4. Show me "
     [:a {:href "https://github.com/pb-/color-schemer/blob/main/src/colorschemer/core.cljs"} "the source"] \.]])
 
 (defn render! []

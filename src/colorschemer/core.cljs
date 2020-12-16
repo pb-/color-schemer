@@ -1,8 +1,8 @@
 (ns ^:figwheel-hooks colorschemer.core
   (:require [dumdom.core :as dumdom :refer [defcomponent]]))
 
-(defn make-hue []
-  {:hue (rand-int 361)
+(defn make-hue [hue]
+  {:hue hue
    :shades [[0.80 0.35]
             [0.75 0.8]
             [0.08 0.97]]})
@@ -11,7 +11,7 @@
   (atom {:code? false
          :editing-name? false
          :selected 0
-         :hues [(make-hue)]
+         :hues [(make-hue (rand-int 360))]
          :url (str js/window.location.origin js/window.location.pathname)}))
 
 (defn format-fragment [data]
@@ -37,9 +37,17 @@
 
 (def hsv->css (comp hsl->css hsv->hsl))
 
+(defn distant-hue [hues]
+  (let [sorted (vec (sort hues))
+        padded (conj sorted (+ 360 (first sorted)))
+        pairs (map vector padded (next padded))
+        sorted-pairs (sort-by #(- (second %) (first %)) pairs)
+        [low high] (last sorted-pairs)]
+    (mod (+ low (quot (- high low) 2)) 360)))
+
 (defn add-hue [state]
   (-> state
-      (update :hues conj (make-hue))
+      (update :hues conj (make-hue (distant-hue (map :hue (:hues state)))))
       (assoc :selected (count (:hues state)))))
 
 (defn remove-hue [{:keys [selected hues] :as state}]
@@ -138,7 +146,7 @@
 
 (defcomponent hue-detail-controls [{:keys [hue shades] :as hue-info} on-change]
   [:div
-   [slider hue 0 360 1 "hue-slider" (fn [h] (on-change (fn [hue-info] (assoc hue-info :hue h))))]
+   [slider hue 0 359 1 "hue-slider" (fn [h] (on-change (fn [hue-info] (assoc hue-info :hue h))))]
    [:div {:class "shade-grid"
           :style {:grid-template-rows (str "repeat(" (count shades) ", 2rem)")}}
     (apply

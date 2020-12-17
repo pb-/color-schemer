@@ -239,7 +239,7 @@
    (if code?
      [css-code state]
      [editor state on-change])
-   [:p {:class "source"} "Version 4. Show me "
+   [:p {:class "source"} "Version 5. Show me "
     [:a {:href "https://github.com/pb-/color-schemer/blob/main/src/colorschemer/core.cljs"} "the source"] \.]])
 
 (defn update-favicon! []
@@ -247,9 +247,18 @@
         link (js/document.getElementById "favicon-link")
         ctx (.getContext canvas "2d")
         state @global-state
+        hues (:hues state)
+        hue-count (count hues)
+        palette-size (min 3 (js/Math.ceil (js/Math.sqrt hue-count)))
+        swatch-size (quot 16 palette-size)
         hue ((:hues state) (:selected state))]
-    (set! (. ctx -fillStyle) (hsv->css (representative hue)))
-    (.fillRect ctx 0 0 16 16)
+    (.clearRect ctx 0 0 16 16)
+    (doseq [i (range palette-size)
+            j (range palette-size)]
+      (let [index (+ i (* palette-size j))]
+        (when (< index hue-count)
+          (set! (. ctx -fillStyle) (hsv->css (representative (hues index))))
+          (.fillRect ctx (* i swatch-size) (* j swatch-size) swatch-size swatch-size))))
     (set! (. link -href) (.toDataURL canvas "image/png"))))
 
 (def update-favicon-lazy! (debounce update-favicon! 250))
@@ -267,6 +276,7 @@
       (swap! global-state assoc :hues (parse-fragment (subs js/window.location.hash 1)))
       (catch js/Error _))
     (js/history.replaceState nil nil " ")) ; clear URL fragment
-  (render!))
+  (render!)
+  (update-favicon!))
 
 (init!)

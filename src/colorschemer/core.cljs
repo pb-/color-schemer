@@ -1,5 +1,6 @@
 (ns ^:figwheel-hooks colorschemer.core
-  (:require [dumdom.core :as dumdom :refer [defcomponent]]))
+  (:require [dumdom.core :as dumdom :refer [defcomponent]]
+            [goog.functions :refer [debounce]]))
 
 (defn make-hue [hue]
   {:hue hue
@@ -241,11 +242,24 @@
    [:p {:class "source"} "Version 4. Show me "
     [:a {:href "https://github.com/pb-/color-schemer/blob/main/src/colorschemer/core.cljs"} "the source"] \.]])
 
+(defn update-favicon! []
+  (let [canvas (js/document.getElementById "favicon-canvas")
+        link (js/document.getElementById "favicon-link")
+        ctx (.getContext canvas "2d")
+        state @global-state
+        hue ((:hues state) (:selected state))]
+    (set! (. ctx -fillStyle) (hsv->css (representative hue)))
+    (.fillRect ctx 0 0 16 16)
+    (set! (. link -href) (.toDataURL canvas "image/png"))))
+
+(def update-favicon-lazy! (debounce update-favicon! 250))
+
 (defn render! []
   (let [state @global-state]
     (dumdom/render
       [main state (fn [f] (swap! global-state f) (render!))]
-      (js/document.getElementById "app"))))
+      (js/document.getElementById "app"))
+    (update-favicon-lazy!)))
 
 (defn init! []
   (when (not-empty js/window.location.hash)

@@ -254,11 +254,11 @@
         hue ((:hues state) (:selected state))]
     (.clearRect ctx 0 0 16 16)
     (doseq [i (range palette-size)
-            j (range palette-size)]
-      (let [index (+ i (* palette-size j))]
-        (when (< index hue-count)
-          (set! (. ctx -fillStyle) (hsv->css (representative (hues index))))
-          (.fillRect ctx (* i swatch-size) (* j swatch-size) swatch-size swatch-size))))
+            j (range palette-size)
+            :let [index (+ i (* palette-size j))]
+            :when (< index hue-count)]
+      (set! (. ctx -fillStyle) (hsv->css (representative (hues index))))
+      (.fillRect ctx (* i swatch-size) (* j swatch-size) swatch-size swatch-size))
     (set! (. link -href) (.toDataURL canvas "image/png"))))
 
 (def update-favicon-lazy! (debounce update-favicon! 250))
